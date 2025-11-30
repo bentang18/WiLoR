@@ -1,5 +1,13 @@
 from pathlib import Path
+
+import builtins #
+import dill #
+
 import torch
+
+import torch.nn as nn #
+import torch.serialization as tser #
+
 import argparse
 import os
 import cv2
@@ -12,6 +20,43 @@ from wilor.utils import recursive_to
 from wilor.datasets.vitdet_dataset import ViTDetDataset, DEFAULT_MEAN, DEFAULT_STD
 from wilor.utils.renderer import Renderer, cam_crop_to_full
 from ultralytics import YOLO 
+
+from ultralytics.nn.modules.conv import Conv, Concat
+from ultralytics.nn.modules.block import SPPF, DFL, Bottleneck, C2f
+from ultralytics.nn.modules.head import Detect, Pose
+from ultralytics.nn.tasks import PoseModel
+from ultralytics.utils.tal import TaskAlignedAssigner
+from ultralytics.utils.loss import KeypointLoss, v8PoseLoss, BboxLoss
+from ultralytics.utils import IterableSimpleNamespace
+
+tser.add_safe_globals([
+    Conv,
+    Concat,
+    SPPF,
+    DFL,
+    Bottleneck,
+    C2f,
+    Detect,
+    Pose,
+    PoseModel,
+    TaskAlignedAssigner,
+    KeypointLoss,
+    v8PoseLoss,
+    BboxLoss,
+    IterableSimpleNamespace,
+    nn.Sequential,
+    nn.Conv2d,
+    nn.BCEWithLogitsLoss,
+    nn.Upsample,
+    nn.BatchNorm2d,
+    nn.MaxPool2d,
+    nn.ModuleList,
+    nn.SiLU,
+    builtins.getattr,
+    dill._dill._load_type,
+])
+
+
 LIGHT_PURPLE=(0.25098039,  0.274117647,  0.65882353)
 
 def main():
@@ -26,6 +71,7 @@ def main():
 
     # Download and load checkpoints
     model, model_cfg = load_wilor(checkpoint_path = './pretrained_models/wilor_final.ckpt' , cfg_path= './pretrained_models/model_config.yaml')
+    
     detector = YOLO('./pretrained_models/detector.pt')
     # Setup the renderer
     renderer = Renderer(model_cfg, faces=model.mano.faces)

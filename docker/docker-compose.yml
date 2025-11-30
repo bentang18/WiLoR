@@ -1,0 +1,25 @@
+services:
+  wilor-dev:
+    build:
+      context: ../
+      dockerfile: ./docker/wilor-dev.Dockerfile
+    volumes:
+      - ../:/app
+    tty: true
+
+    shm_size: "16g"
+    ipc: host
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1 # alternatively, use `count: all` for all GPUs
+              capabilities: [gpu]
